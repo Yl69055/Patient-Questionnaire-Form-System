@@ -2,7 +2,7 @@ import { Control } from 'react-hook-form';
 
 export type FormInputs = {
   // 第一页
-  name: string;
+  patientName: string;
   gender: '男' | '女';
   age: number;
   dominantHand: '左手' | '右手' | '双手';

@@ -18,8 +18,13 @@ function Page1({ control, formData, updateFormData }: Page1Props) {
   const sportLifestyle = watch('sportLifestyle');
 
   useEffect(() => {
-    updateFormData(watchFields);
-  }, [watchFields, updateFormData]);
+    const subscription = watch((value, { name, type }) => {
+      if (name) {
+        updateFormData({ [name]: value[name as keyof FormInputs] });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
 
   return (
     <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
@@ -27,7 +32,7 @@ function Page1({ control, formData, updateFormData }: Page1Props) {
         <label className="leading-loose">姓名</label>
         <div className="relative focus-within:text-gray-600 text-gray-400">
           <Controller
-            name="name"
+            name="patientName"
             control={control}
             rules={{ required: "姓名是必填项" }}
             render={({ field }) => (
@@ -41,7 +46,7 @@ function Page1({ control, formData, updateFormData }: Page1Props) {
           />
           <User className="absolute left-3 top-2 h-6 w-6" />
         </div>
-        {errors.name && <span className="text-red-500 text-sm">{errors.name.message}</span>}
+        {errors.patientName && <span className="text-red-500 text-sm">{errors.patientName.message}</span>}
       </div>
 
       <div className="flex flex-col">
@@ -52,14 +57,30 @@ function Page1({ control, formData, updateFormData }: Page1Props) {
             control={control}
             rules={{ required: "性别是必选项" }}
             render={({ field }) => (
-              <select
-                {...field}
-                className="pr-4 pl-10 py-2 border focus:ring-gray-500 focus:border-gray-900 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none text-gray-600"
-              >
-                <option value="">请选择性别</option>
-                <option value="男">男</option>
-                <option value="女">女</option>
-              </select>
+              <div className="flex space-x-4">
+                <label className="inline-flex items-center">
+                  <input 
+                    type="radio" 
+                    {...field} 
+                    value="男" 
+                    checked={field.value === "男"}
+                    onChange={() => field.onChange("男")}
+                    className="form-radio" 
+                  />
+                  <span className="ml-2">男</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input 
+                    type="radio" 
+                    {...field} 
+                    value="女" 
+                    checked={field.value === "女"}
+                    onChange={() => field.onChange("女")}
+                    className="form-radio" 
+                  />
+                  <span className="ml-2">女</span>
+                </label>
+              </div>
             )}
           />
         </div>
@@ -163,14 +184,30 @@ function Page1({ control, formData, updateFormData }: Page1Props) {
             control={control}
             rules={{ required: "此项是必选项" }}
             render={({ field }) => (
-              <select
-                {...field}
-                className="pr-4 pl-10 py-2 border focus:ring-gray-500 focus:border-gray-900 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none text-gray-600"
-              >
-                <option value="">请选择</option>
-                <option value="是">是</option>
-                <option value="否">否</option>
-              </select>
+              <div className="flex space-x-4">
+                <label className="inline-flex items-center">
+                  <input 
+                    type="radio" 
+                    {...field} 
+                    value="是" 
+                    checked={field.value === "是"}
+                    onChange={() => field.onChange("是")}
+                    className="form-radio" 
+                  />
+                  <span className="ml-2">是</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input 
+                    type="radio" 
+                    {...field} 
+                    value="否" 
+                    checked={field.value === "否"}
+                    onChange={() => field.onChange("否")}
+                    className="form-radio" 
+                  />
+                  <span className="ml-2">否</span>
+                </label>
+              </div>
             )}
           />
           <Activity className="absolute left-3 top-2 h-6 w-6" />
