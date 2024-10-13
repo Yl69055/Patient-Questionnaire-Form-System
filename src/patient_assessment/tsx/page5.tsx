@@ -1,9 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { FormInputs, PageProps } from '../../types';
+import { FormInputs } from '../../types';
 
-function Page5({ control }: PageProps) {
-  const { formState: { errors }, watch } = useForm<FormInputs>();
+interface Page5Props {
+  control: any;
+  formData: Partial<FormInputs>;
+  updateFormData: (data: Partial<FormInputs>) => void;
+}
+
+function Page5({ control, formData, updateFormData }: Page5Props) {
+  const { watch, getValues } = useForm<FormInputs>({
+    defaultValues: formData
+  });
+
+  useEffect(() => {
+    const subscription = watch((value, { name, type }) => {
+      if (name) {
+        const currentValues = getValues();
+        updateFormData({ ...currentValues, [name]: value[name as keyof FormInputs] });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, getValues, updateFormData]);
 
   return (
     <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
@@ -16,17 +34,30 @@ function Page5({ control }: PageProps) {
           render={({ field }) => (
             <div className="flex space-x-4">
               <label className="inline-flex items-center">
-                <input type="radio" {...field} value="是" className="form-radio" />
+                <input 
+                  type="radio" 
+                  {...field} 
+                  value="是" 
+                  checked={field.value === "是"}
+                  onChange={() => field.onChange("是")}
+                  className="form-radio" 
+                />
                 <span className="ml-2">是</span>
               </label>
               <label className="inline-flex items-center">
-                <input type="radio" {...field} value="否" className="form-radio" />
+                <input 
+                  type="radio" 
+                  {...field} 
+                  value="否" 
+                  checked={field.value === "否"}
+                  onChange={() => field.onChange("否")}
+                  className="form-radio" 
+                />
                 <span className="ml-2">否</span>
               </label>
             </div>
           )}
         />
-        {errors.nightPain && <span className="text-red-500 text-sm">{errors.nightPain.message}</span>}
       </div>
 
       <div className="flex flex-col">
@@ -38,17 +69,30 @@ function Page5({ control }: PageProps) {
           render={({ field }) => (
             <div className="flex space-x-4">
               <label className="inline-flex items-center">
-                <input type="radio" {...field} value="能" className="form-radio" />
+                <input 
+                  type="radio" 
+                  {...field} 
+                  value="能" 
+                  checked={field.value === "能"}
+                  onChange={() => field.onChange("能")}
+                  className="form-radio" 
+                />
                 <span className="ml-2">能</span>
               </label>
               <label className="inline-flex items-center">
-                <input type="radio" {...field} value="不能" className="form-radio" />
+                <input 
+                  type="radio" 
+                  {...field} 
+                  value="不能" 
+                  checked={field.value === "不能"}
+                  onChange={() => field.onChange("不能")}
+                  className="form-radio" 
+                />
                 <span className="ml-2">不能</span>
               </label>
             </div>
           )}
         />
-        {errors.sideSleepping && <span className="text-red-500 text-sm">{errors.sideSleepping.message}</span>}
       </div>
 
       <div className="flex flex-col">
@@ -61,18 +105,23 @@ function Page5({ control }: PageProps) {
             control={control}
             rules={{ required: "此项是必填项" }}
             render={({ field }) => (
-              <input
-                type="range"
-                min="0"
-                max="100"
-                {...field}
-                className="w-full"
-              />
+              <div className="flex items-center w-full">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  {...field}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    field.onChange(value);
+                  }}
+                  className="w-full"
+                />
+                <span className="ml-2 w-12 text-center">{field.value || 0}分</span>
+              </div>
             )}
           />
-          <span className="ml-2">{watch("sleepDifficulty") || 0}分</span>
         </div>
-        {errors.sleepDifficulty && <span className="text-red-500 text-sm">{errors.sleepDifficulty.message}</span>}
       </div>
     </div>
   );

@@ -14,9 +14,6 @@ function Page1({ control, formData, updateFormData }: Page1Props) {
     defaultValues: formData
   });
 
-  const watchFields = watch();
-  const sportLifestyle = watch('sportLifestyle');
-
   useEffect(() => {
     const subscription = watch((value, { name, type }) => {
       if (name) {
@@ -215,55 +212,68 @@ function Page1({ control, formData, updateFormData }: Page1Props) {
         {errors.sportLifestyle && <span className="text-red-500 text-sm">{errors.sportLifestyle.message}</span>}
       </div>
 
-      {sportLifestyle === '是' && (
-        <>
-          <div className="flex flex-col">
-            <label className="leading-loose">运动水平</label>
-            <div className="relative focus-within:text-gray-600 text-gray-400">
-              <Controller
-                name="sportLevel"
-                control={control}
-                rules={{ required: "运动水平是必选项" }}
-                render={({ field }) => (
-                  <select
-                    {...field}
-                    className="pr-4 pl-10 py-2 border focus:ring-gray-500 focus:border-gray-900 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none text-gray-600"
-                  >
-                    <option value="">请选择运动水平</option>
-                    <option value="竞技性运动">竞技性运动</option>
-                    <option value="休闲运动">休闲运动</option>
-                    <option value="不参加运动">不参加运动</option>
-                  </select>
-                )}
-              />
-            </div>
-            {errors.sportLevel && <span className="text-red-500 text-sm">{errors.sportLevel.message}</span>}
-          </div>
+      {/* 新添加的运动相关问题 */}
+      <div className="flex flex-col">
+        <label className="leading-loose">7. 参与运动的程度：</label>
+        <div className="relative focus-within:text-gray-600 text-gray-400">
+          <Controller
+            name="sportLevel"
+            control={control}
+            rules={{ required: "参与运动的程度是必选项" }}
+            render={({ field }) => (
+              <div className="flex flex-col space-y-2">
+                {['竞技性运动', '休闲运动', '不参加运动'].map((option) => (
+                  <label key={option} className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      {...field}
+                      value={option}
+                      checked={field.value === option}
+                      onChange={() => field.onChange(option)}
+                      className="form-radio"
+                    />
+                    <span className="ml-2">{option}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          />
+        </div>
+        {errors.sportLevel && <span className="text-red-500 text-sm">{errors.sportLevel.message}</span>}
+      </div>
 
-          <div className="flex flex-col">
-            <label className="leading-loose">运动类型</label>
-            <div className="relative focus-within:text-gray-600 text-gray-400">
-              <Controller
-                name="sportType"
-                control={control}
-                rules={{ required: "运动类型是必选项" }}
-                render={({ field }) => (
-                  <select
-                    {...field}
-                    className="pr-4 pl-10 py-2 border focus:ring-gray-500 focus:border-gray-900 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none text-gray-600"
-                  >
-                    <option value="">请选择运动类型</option>
-                    <option value="接触性运动">接触性运动</option>
-                    <option value="强力过顶运动">强力过顶运动</option>
-                    <option value="无">无</option>
-                  </select>
-                )}
-              />
-            </div>
-            {errors.sportType && <span className="text-red-500 text-sm">{errors.sportType.message}</span>}
-          </div>
-        </>
-      )}
+      <div className="flex flex-col">
+        <label className="leading-loose">8. 您的运动类型是：</label>
+        <div className="relative focus-within:text-gray-600 text-gray-400">
+          <Controller
+            name="sportType"
+            control={control}
+            rules={{ required: "运动类型是必选项" }}
+            render={({ field }) => (
+              <div className="flex flex-col space-y-2">
+                {[
+                  { value: '接触性运动', label: '接触性运动（如：篮球、足球）' },
+                  { value: '强力过顶运动', label: '强力过顶运动（如：排球、网球）' },
+                  { value: '无', label: '无' }
+                ].map((option) => (
+                  <label key={option.value} className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      {...field}
+                      value={option.value}
+                      checked={field.value === option.value}
+                      onChange={() => field.onChange(option.value)}
+                      className="form-radio"
+                    />
+                    <span className="ml-2">{option.label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          />
+        </div>
+        {errors.sportType && <span className="text-red-500 text-sm">{errors.sportType.message}</span>}
+      </div>
     </div>
   );
 }

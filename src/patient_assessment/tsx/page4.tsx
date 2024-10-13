@@ -1,9 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { FormInputs, PageProps } from '../../types';
 
-function Page4({ control }: PageProps) {
-  const { formState: { errors } } = useForm<FormInputs>();
+interface Page4Props extends PageProps {
+  formData: Partial<FormInputs>;
+  updateFormData: (data: Partial<FormInputs>) => void;
+}
+
+function Page4({ control, formData, updateFormData }: Page4Props) {
+  const { formState: { errors }, watch } = useForm<FormInputs>({
+    defaultValues: formData
+  });
+
+  const watchFields = watch();
+
+  useEffect(() => {
+    const subscription = watch((value, { name, type }) => {
+      if (name) {
+        updateFormData({ [name]: value[name as keyof FormInputs] });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
 
   return (
     <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
@@ -64,12 +82,14 @@ function Page4({ control }: PageProps) {
             rules={{ required: "此项是必选项" }}
             render={({ field }) => (
               <div className="mt-2">
-                {["没有限制", "轻微限制", "中等限制", "非常限制", "严重限制"].map((option, index) => (
-                  <label key={index} className="inline-flex items-center mr-4">
+                {["没有限制", "轻微限制", "中等限制", "非常限制", "严重限制"].map((option) => (
+                  <label key={option} className="inline-flex items-center mr-4">
                     <input
                       type="radio"
                       {...field}
                       value={option}
+                      checked={field.value === option}
+                      onChange={() => field.onChange(option)}
                       className="form-radio"
                     />
                     <span className="ml-2">{option}</span>
@@ -134,12 +154,14 @@ function Page4({ control }: PageProps) {
               rules={{ required: "此项是必选项" }}
               render={({ field }) => (
                 <div className="mt-2">
-                  {["没困难", "有点困难", "明显困难但能做到", "非常困难", "不能"].map((option, index) => (
-                    <label key={index} className="inline-flex items-center mr-4">
+                  {["没困难", "有点困难", "明显困难但能做到", "非常困难", "不能"].map((option) => (
+                    <label key={option} className="inline-flex items-center mr-4">
                       <input
                         type="radio"
                         {...field}
                         value={option}
+                        checked={field.value === option}
+                        onChange={() => field.onChange(option)}
                         className="form-radio"
                       />
                       <span className="ml-2">{option}</span>

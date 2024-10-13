@@ -1,14 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { ThumbsUp } from 'lucide-react';
 import { FormInputs } from '../../types';
 
 interface Page3Props {
   control: any;
+  formData: Partial<FormInputs>;
+  updateFormData: (data: Partial<FormInputs>) => void;
 }
 
-function Page3({ control }: Page3Props) {
-  const { formState: { errors } } = useForm<FormInputs>();
+function Page3({ control, formData, updateFormData }: Page3Props) {
+  const { formState: { errors }, watch } = useForm<FormInputs>({
+    defaultValues: formData
+  });
+
+  const watchFields = watch();
+
+  useEffect(() => {
+    const subscription = watch((value, { name, type }) => {
+      if (name) {
+        updateFormData({ [name]: value[name as keyof FormInputs] });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, updateFormData]);
 
   return (
     <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
@@ -48,6 +63,8 @@ function Page3({ control }: Page3Props) {
                   type="radio"
                   {...field}
                   value="是"
+                  checked={field.value === "是"}
+                  onChange={() => field.onChange("是")}
                   className="form-radio"
                 />
                 <span className="ml-2">是</span>
@@ -57,6 +74,8 @@ function Page3({ control }: Page3Props) {
                   type="radio"
                   {...field}
                   value="否"
+                  checked={field.value === "否"}
+                  onChange={() => field.onChange("否")}
                   className="form-radio"
                 />
                 <span className="ml-2">否</span>

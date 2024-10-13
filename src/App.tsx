@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Clipboard } from 'lucide-react';
 import Page1 from './patient_assessment/tsx/page1';
@@ -13,37 +13,31 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<FormInputs>>({});
-  const { handleSubmit, control, formState: { errors }, setValue } = useForm<FormInputs>();
+  const { handleSubmit, control, formState: { errors }, reset } = useForm<FormInputs>({
+    defaultValues: formData
+  });
 
-  useEffect(() => {
-    console.log('组件已挂载');
-  }, []);
-
-  useEffect(() => {
-    // 当页面改变时，使用存储的formData填充表单字段
-    Object.entries(formData).forEach(([name, value]) => {
-      setValue(name as keyof FormInputs, value);
+  const updateFormData = useCallback((data: Partial<FormInputs>) => {
+    setFormData(prevData => {
+      const newData = { ...prevData, ...data };
+      console.log('Updated form data:', newData);
+      return newData;
     });
-  }, [page, formData, setValue]);
+  }, []);
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     console.log('onSubmit函数被调用');
+    console.log('提交的表单数据:', data);
+    console.log('当前formData状态:', formData);
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      console.log('提交表单数据:', data);
       const response = await fetch('http://localhost:5001/api/save-questionnaire', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          patientName: data.name,
-          age: data.age,
-          gender: data.gender,
-          symptoms: data.symptoms,
-          medicalHistory: data.medicalHistory,
-        }),
+        body: JSON.stringify(data),
       });
 
       console.log('收到响应:', response);
@@ -63,22 +57,24 @@ function App() {
     }
   };
 
-  const nextPage = () => {
-    console.log('点击下一页');
-    setPage((prevPage) => Math.min(prevPage + 1, 5));
-  };
+  const nextPage = useCallback(() => {
+    setPage((prevPage) => {
+      const newPage = Math.min(prevPage + 1, 5);
+      console.log(`Moving to page ${newPage}. Current form data:`, formData);
+      return newPage;
+    });
+  }, [formData]);
 
-  const prevPage = () => {
-    console.log('点击上一页');
-    setPage((prevPage) => Math.max(prevPage - 1, 1));
-  };
-
-  const updateFormData = (data: Partial<FormInputs>) => {
-    setFormData(prevData => ({ ...prevData, ...data }));
-  };
+  const prevPage = useCallback(() => {
+    setPage((prevPage) => {
+      const newPage = Math.max(prevPage - 1, 1);
+      console.log(`Moving to page ${newPage}. Current form data:`, formData);
+      return newPage;
+    });
+  }, [formData]);
 
   const renderPage = () => {
-    console.log('渲染页面:', page);
+    console.log(`Rendering page ${page}. Current form data:`, formData);
     const props = { control, formData, updateFormData };
     switch (page) {
       case 1:
@@ -95,8 +91,6 @@ function App() {
         return null;
     }
   };
-
-  console.log('当前页面:', page);
 
   return (
     <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
@@ -115,7 +109,10 @@ function App() {
                 </p>
               </div>
             </div>
-            <form className="divide-y divide-gray-200" onSubmit={handleSubmit(onSubmit)}>
+            <form className="divide-y divide-gray-200" onSubmit={handleSubmit(onSubmit, (errors) => {
+              console.log('表单验证错误:', errors);
+              setSubmitError('请填写所有必填字段');
+            })}>
               {renderPage()}
               {submitError && <p className="text-red-500 mt-2">{submitError}</p>}
               <div className="pt-4 flex items-center space-x-4">
@@ -143,6 +140,7 @@ function App() {
                     type="submit"
                     className="bg-green-500 flex justify-center items-center w-full text-white px-4 py-3 rounded-md focus:outline-none hover:bg-green-600 transition-colors"
                     disabled={isSubmitting}
+                    onClick={() => console.log('Submit button clicked')}
                   >
                     {isSubmitting ? '提交中...' : '提交'}
                   </button>

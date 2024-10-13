@@ -12,11 +12,11 @@ export type FormInputs = {
   sportLevel: '竞技性运动' | '休闲运动' | '不参加运动';
   sportType: '接触性运动' | '强力过顶运动' | '无';
   // 第二页
-  painLevel: number;
-  painFrequency: string;
-  strongerPainKiller: '有' | '无';
-  painKillerFrequency: number;
-  painKillerDosage: number;
+  painRating: number;
+  painFrequencyAndMedication: 'a' | 'b' | 'c' | 'd' | 'e' | 'f';
+  strongerPainKiller?: '有' | '无';
+  painKillerFrequency?: number;
+  painKillerDosage?: number;
   shoulderPain: '无' | '轻微' | '中等' | '严重' | '极度';
   shoulderPainLifting: '无疼痛' | '轻度痛' | '中度痛' | '重度痛';
   // 第三页
