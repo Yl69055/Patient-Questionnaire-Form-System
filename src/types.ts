@@ -59,6 +59,9 @@ export type FormInputs = {
   nightPain: '是' | '否';
   sideSleepping: '能' | '不能';
   sleepDifficulty: number;
+  // New fields
+  symptoms: string;
+  medicalHistory: string;
 };
 
 export interface PageProps {

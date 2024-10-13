@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Clipboard } from 'lucide-react';
 import Page1 from './patient_assessment/tsx/page1';
@@ -12,44 +12,91 @@ function App() {
   const [page, setPage] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const { handleSubmit, control } = useForm<FormInputs>();
+  const [formData, setFormData] = useState<Partial<FormInputs>>({});
+  const { handleSubmit, control, formState: { errors }, setValue } = useForm<FormInputs>();
+
+  useEffect(() => {
+    console.log('组件已挂载');
+  }, []);
+
+  useEffect(() => {
+    // 当页面改变时，使用存储的formData填充表单字段
+    Object.entries(formData).forEach(([name, value]) => {
+      setValue(name as keyof FormInputs, value);
+    });
+  }, [page, formData, setValue]);
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
+    console.log('onSubmit函数被调用');
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      // 这里你通常会将数据发送到后端
-      // 例如: await api.submitForm(data);
-      console.log(data);
+      console.log('提交表单数据:', data);
+      const response = await fetch('http://localhost:5001/api/save-questionnaire', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patientName: data.name,
+          age: data.age,
+          gender: data.gender,
+          symptoms: data.symptoms,
+          medicalHistory: data.medicalHistory,
+        }),
+      });
+
+      console.log('收到响应:', response);
+
+      if (!response.ok) {
+        throw new Error(`表单提交失败: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('表单提交结果:', result);
       alert('表单提交成功！');
-      // 可以在这里重置表单或导航到一个"感谢"页面
-    } catch (error) {
-      setSubmitError('提交表单时出错，请稍后重试。');
-      console.error('Form submission error:', error);
+    } catch (error: unknown) {
+      console.error('表单提交错误:', error);
+      setSubmitError(`提交表单时出错，请稍后重试。错误: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const nextPage = () => setPage(Math.min(page + 1, 5));
-  const prevPage = () => setPage(Math.max(page - 1, 1));
+  const nextPage = () => {
+    console.log('点击下一页');
+    setPage((prevPage) => Math.min(prevPage + 1, 5));
+  };
+
+  const prevPage = () => {
+    console.log('点击上一页');
+    setPage((prevPage) => Math.max(prevPage - 1, 1));
+  };
+
+  const updateFormData = (data: Partial<FormInputs>) => {
+    setFormData(prevData => ({ ...prevData, ...data }));
+  };
 
   const renderPage = () => {
+    console.log('渲染页面:', page);
+    const props = { control, formData, updateFormData };
     switch (page) {
       case 1:
-        return <Page1 control={control} />;
+        return <Page1 {...props} />;
       case 2:
-        return <Page2 control={control} />;
+        return <Page2 {...props} />;
       case 3:
-        return <Page3 control={control} />;
+        return <Page3 {...props} />;
       case 4:
-        return <Page4 control={control} />;
+        return <Page4 {...props} />;
       case 5:
-        return <Page5 control={control} />;
+        return <Page5 {...props} />;
       default:
         return null;
     }
   };
+
+  console.log('当前页面:', page);
 
   return (
     <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">

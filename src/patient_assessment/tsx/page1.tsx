@@ -1,15 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { User, Phone, Activity, Hand, Crosshair } from 'lucide-react';
 import { FormInputs } from '../../types';
 
 interface Page1Props {
   control: any;
+  formData: Partial<FormInputs>;
+  updateFormData: (data: Partial<FormInputs>) => void;
 }
 
-function Page1({ control }: Page1Props) {
-  const { formState: { errors }, watch } = useForm<FormInputs>();
+function Page1({ control, formData, updateFormData }: Page1Props) {
+  const { formState: { errors }, watch } = useForm<FormInputs>({
+    defaultValues: formData
+  });
+
+  const watchFields = watch();
   const sportLifestyle = watch('sportLifestyle');
+
+  useEffect(() => {
+    updateFormData(watchFields);
+  }, [watchFields, updateFormData]);
 
   return (
     <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
